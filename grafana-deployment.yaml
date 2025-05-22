@@ -1,0 +1,43 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  annotations:
+    kompose.cmd: /snap/kompose/19/kompose-linux-amd64 convert
+    kompose.version: 1.21.0 (992df58d8)
+  creationTimestamp: null
+  labels:
+    io.kompose.service: grafana
+  name: grafana
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      io.kompose.service: grafana
+  strategy: {}
+  template:
+    metadata:
+      annotations:
+        kompose.cmd: /snap/kompose/19/kompose-linux-amd64 convert
+        kompose.version: 1.21.0 (992df58d8)
+      creationTimestamp: null
+      labels:
+        io.kompose.service: grafana
+    spec:
+      containers:
+      - image: grafana/grafana
+        imagePullPolicy: ""
+        name: grafana
+        ports:
+        - containerPort: 3000
+        resources: {}
+      restartPolicy: Always
+      serviceAccountName: ""
+      volumeMounts:
+        - name: grafana-datasources
+          mountPath: /etc/grafana/provisioning/datasources
+          readOnly: true
+      volumes:
+      - name: grafana-datasources
+        configMap:
+          name: grafana-datasources
+status: {}
