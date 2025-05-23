@@ -31,7 +31,10 @@ minikube service prometheus
 minikube service grafana
 minikube dashboard
 ```
-
+Re-deploy
+```cmd
+kubectl rollout restart deployment <weather-app>
+```
 ### Docker-Compose
 ```cmd
 docker-compose up

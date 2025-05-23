@@ -1,0 +1,84 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: grafana
+  labels:
+    app: grafana
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      io.kompose.service: grafana
+  template:
+    metadata:
+      labels:
+        io.kompose.service: grafana
+        app: grafana
+    spec:
+      securityContext:
+        fsGroup: 472  # Grafana group ID
+        runAsUser: 472  # Grafana user ID
+        runAsNonRoot: true
+      
+      containers:
+      - name: grafana
+        image: grafana/grafana:latest
+        ports:
+        - containerPort: 3000
+          name: http
+        
+        env:
+        # Basic configuration
+        - name: GF_SECURITY_ADMIN_PASSWORD
+          value: "admin"
+        
+        # Paths configuration - IMPORTANT for persistence
+        - name: GF_PATHS_DATA
+          value: "/var/lib/grafana"
+        - name: GF_PATHS_LOGS
+          value: "/var/lib/grafana/logs"
+        - name: GF_PATHS_PLUGINS
+          value: "/var/lib/grafana/plugins"
+        - name: GF_PATHS_PROVISIONING
+          value: "/etc/grafana/provisioning"
+        
+        # Database configuration for user data
+        - name: GF_DATABASE_TYPE
+          value: "sqlite3"
+        - name: GF_DATABASE_PATH
+          value: "/var/lib/grafana/grafana.db"
+        
+        # Allow users to create/edit dashboards
+        - name: GF_DASHBOARDS_DEFAULT_HOME_DASHBOARD_PATH
+          value: ""
+        - name: GF_USERS_ALLOW_SIGN_UP
+          value: "false"
+        - name: GF_USERS_ALLOW_ORG_CREATE
+          value: "false"
+        
+        # Session configuration
+        - name: GF_SESSION_PROVIDER
+          value: "file"
+        - name: GF_SESSION_PROVIDER_CONFIG
+          value: "/var/lib/grafana/sessions"
+        
+        volumeMounts:
+
+        - name: grafana-datasources
+          mountPath: /etc/grafana/provisioning/datasources
+          readOnly: true
+        
+        # Mount the ENTIRE Grafana data directory (read-write)
+        - name: grafana-storage
+          mountPath: /var/lib/grafana
+      
+      volumes:
+      # Datasource configuration (initial setup only)
+      - name: grafana-datasources
+        configMap:
+          name: grafana-datasources
+      
+      # Persistent storage for ALL user data
+      - name: grafana-storage
+        persistentVolumeClaim:
+          claimName: grafana-pvc

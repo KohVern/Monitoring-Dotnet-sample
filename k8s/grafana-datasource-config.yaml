@@ -1,10 +1,11 @@
 apiVersion: v1
 kind: ConfigMap
 metadata:
-  name: grafana-datasources
+  name: grafana-config
   labels:
     app: grafana
 data:
+  # Datasource configurations
   prometheus.yaml: |-
     apiVersion: 1
     datasources:
